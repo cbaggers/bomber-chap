@@ -43,6 +43,19 @@
     (kill-level-tiles)
     (spawn-level name)))
 
+(defun tile-spawn (kind pos &rest args)
+  ;; We use this so it's easier to debug
+  ;; levels that dont fit in the world
+  (when (and (< (abs (x pos)) 1024)
+             (< (abs (y pos)) 1024))
+    (apply #'spawn kind pos args)))
+
+(defvar *resize-body* (lambda ()))
+
+(defun resized ()
+  (when *resize-body*
+    (funcall *resize-body*)))
+
 (defun spawn-level (name)
   (let ((level-string (get-level name))
         (starting-pos (v! *level-origin*)))
@@ -57,42 +70,47 @@
            (cond
              ((char= char #\#)
               (spawn 'floor-tile pos)
-              (spawn 'wall-tile pos))
+              (tile-spawn 'wall-tile pos))
              ((char= char #\*)
               (spawn 'floor-tile pos)
-              (spawn 'block-tile pos))
+              (tile-spawn 'block-tile pos))
              ((char= char #\0)
               (spawn 'floor-tile pos)
-              (spawn 'chap-0 (v2:- pos (v! 0 20))
-                     :spawn-point (spawn 'spawn-point pos)))
+              (tile-spawn 'chap-0 (v2:- pos (v! 0 20))
+                          :spawn-point (tile-spawn 'spawn-point pos)))
              ((char= char #\1)
               (spawn 'floor-tile pos)
-              (spawn 'chap-1 (v2:- pos (v! 0 20))
-                     :spawn-point (spawn 'spawn-point pos)))
+              (tile-spawn 'chap-1 (v2:- pos (v! 0 20))
+                          :spawn-point (tile-spawn 'spawn-point pos)))
              ((char= char #\space)
               (spawn 'floor-tile pos))
              ((char= #\. char)
               (spawn 'floor-tile pos)
-              (spawn (print (alexandria:random-elt '(flame-powerup
-                                                bomb-powerup
-                                                bomb-powerup
-                                                bomb-powerup
-                                                speed-powerup
-                                                speed-powerup
-                                                speed-powerup)))
-                     pos)
-              (spawn 'block-tile pos))
+              (tile-spawn (alexandria:random-elt '(flame-powerup
+                                                   bomb-powerup
+                                                   bomb-powerup
+                                                   bomb-powerup
+                                                   speed-powerup
+                                                   speed-powerup
+                                                   speed-powerup))
+                          pos)
+              (tile-spawn 'block-tile pos))
              ((char= #\newline char)
               (incf lines)
               (setf (x pos) (- (x starting-pos) *tile-size*)
                     (y pos) (- (y pos) *tile-size*)))
              (t (warn "Unknown level symbol ~a" char)))
            (incf (x pos) *tile-size*))
-        (setf *screen-height-in-game-units*
-              (* 2 lines *tile-size*))
+        (flet ((resized ()
+                 (let ((res (surface-resolution (current-surface))))
+                   (setf *screen-height-in-game-units*
+                         (+ (* (/ (* (max width height) *tile-size*) (x res))
+                               (y res))
+                            (* 5 *tile-size*))))))
+          (resized)
+          (setf *resize-body* #'resized))
+        (add-window-resize-listener 'resized)
         (setf *current-level* name)))))
-case
-
 
 (defun kill-level-tiles ()
   ;; hack: only for dev
