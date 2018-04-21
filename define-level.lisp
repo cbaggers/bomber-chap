@@ -1,6 +1,7 @@
 (in-package :bomber-chap)
 
 (defvar *levels* (make-hash-table))
+(defvar *current-level* nil)
 
 (defparameter *level-key*
   '((#\# wall-tile)
@@ -13,7 +14,15 @@
   (setf (gethash name *levels*) string))
 
 (defmacro define-level (name string)
-  `(register-level ',name ,string))
+  `(progn
+     (register-level ',name ,string)
+     ;; hack
+     (push (lambda ()
+             (when (eq *current-level* ',name)
+               (as *god*
+                 (kill-level-tiles)
+                 (spawn-level ',name))))
+           daft::*tasks-for-next-frame*)))
 
 
 (define-level :yay
@@ -22,19 +31,20 @@
 ## *** *** *** *** ##
 ## *** *** *** *** ##
 ## *** *** *** *** ##
+## ***     *** *** ##
 ## *** *** *** *** ##
 ## *** *** *** *** ##
-## *** *** *** *** ##
-## *** *** *** *** ##
+## *** ***     *** ##
 ## *** *** *** *** ##
 #####################")
 
 (defun get-level (name)
   (gethash name *levels*))
 
-(defun spawn-level (name pos)
-  (let ((starting-pos (v! pos))
-        (level-string (get-level name)))
+(defun spawn-level (name)
+  (let* ((starting-pos *level-origin*)
+         (pos (v! starting-pos))
+         (level-string (get-level name)))
     (loop :for char :across level-string :do
        (let ((tile (cadr (assoc char *level-key*))))
          (cond
@@ -47,7 +57,8 @@
             (setf (x pos) (- (x starting-pos) *tile-size*)
                   (y pos) (+ (y pos) *tile-size*)))
            (t (warn "Unknown level symbol ~a" char))))
-       (incf (x pos) *tile-size*))))
+       (incf (x pos) *tile-size*))
+    (setf *current-level* name)))
 
 
 
