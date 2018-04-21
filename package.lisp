@@ -1,4 +1,5 @@
 ;;;; package.lisp
 
-(defpackage #:bomber-chap
-  (:use #:cl #:daft))
+(uiop:define-package #:bomber-chap
+    (:use #:cl #:daft #:vari #:rtg-math
+          #:temporal-functions))
