@@ -10,6 +10,7 @@
 
 (define-actor chap ((:visual "images/bomberman/bman.png")
                     (:tile-count (8 4))
+                    (:default-depth 10)
                     (bombs nil)
                     (simultaneous-bomb-count 10))
   (:main
@@ -27,6 +28,7 @@
            (1 (advance-frame 0.4 '(17 24)))
            (2 (advance-frame 0.4 '(0 8)))
            (3 (advance-frame 0.4 '(25 32))))))
+     (focus-camera)
      (let ((touching-bomb-p (coll-with 'bomb)))
        (setf bombs (remove-if #'is-dead bombs))
        (when (and (pad-button 0)
@@ -37,6 +39,7 @@
 
 (define-actor flame ((:visual "images/flame/flame.png")
                      (:tile-count (5 1))
+                     (:default-depth 50)
                      (time-to-die (after (seconds 1) t)))
   (:main
    (advance-frame 0.3)
@@ -45,6 +48,7 @@
 
 (define-actor bomb ((:visual "images/bomb/bomb.png")
                     (:tile-count (3 1))
+                    (:default-depth 40)
                     (range 3)
                     (splode (after (seconds 3) t)))
   (:main
@@ -60,9 +64,25 @@
      (die))
    (advance-frame 0.1)))
 
-(defun kill-all-bombs ()
+(define-actor wall-tile ((:visual "images/blocks/wall.png")
+                         (:default-depth 70))
+  (:main))
+
+(define-actor block-tile ((:visual "images/blocks/block.png")
+                          (:default-depth 60))
+  (:main))
+
+(define-actor floor-tile ((:visual "images/blocks/floor.png")
+                          (:default-depth 80))
+  (:main))
+
+(defun kill-all-of (kind-name)
   ;; hack: only for dev
   (loop :for x :across
      (daft::this-frames-actors
-      (daft::get-actor-kind-by-name *current-scene* 'bomb))
+      (daft::get-actor-kind-by-name *current-scene* kind-name))
      :do (as x (die))))
+
+(defun kill-all-bombs ()
+  ;; hack: only for dev
+  (kill-all-of 'bomb))
