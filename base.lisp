@@ -111,7 +111,8 @@
                   ;; not sure this feels nice though
                   (setf last-dir (move-chap ang speed)))
                 (decf cool-down-hack)
-                (let ((touching-bomb-p (coll-with 'bomb)))
+                (let ((touching-bomb-p (or (coll-with 'bomb-0)
+                                           (coll-with 'bomb-1))))
                   (setf bombs (remove-if #'is-dead bombs))
                   (when (and (drop-for-chap ,id)
                              (< (length bombs) simultaneous-bomb-count)
@@ -285,7 +286,3 @@
      (daft::this-frames-actors
       (daft::get-actor-kind-by-name *current-scene* kind-name))
      :do (as x (die))))
-
-(defun kill-all-bombs ()
-  ;; hack: only for dev
-  (kill-all-of 'bomb))
