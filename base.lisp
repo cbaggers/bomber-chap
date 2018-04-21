@@ -13,8 +13,22 @@
 (define-audio
   (:all :channels 32))
 
-(define-god ()
-  (:main
+(define-god ((logo nil))
+  (:start
+   (change-level :menu)
+   (print "start")
+   (setf logo (spawn 'logo (v! 0 0)))
+   (print logo)
+   (change-state :menu))
+  (:menu
+   (when (or (key-down-p key.space)
+             (pad-button 0))
+     (print "menu")
+     (print logo)
+     (kill logo)
+     (change-level :yay)
+     (change-state :game)))
+  (:game
    (if *shake*
        (funcall *shake*)
        (setf (focus-offset) (v! 0 0)))))
@@ -28,6 +42,10 @@
                     (v! (* strength (sin (* 100 %progress%)))
                         (* strength (cos (* 60 %progress%)))))))
           (once (setf *shake* nil)))))
+
+(define-actor logo ((:visual "images/menu/title.png")
+                    (:default-depth 5))
+  (:main))
 
 ;;------------------------------------------------------------
 ;; As our collision mask give us so little info, and this is
@@ -110,10 +128,13 @@
                                    :range splode-size)
                             bombs)))))
               (when (coll-with 'speed-powerup)
+                (format t "Chap ~a got a speed-powerup" ,id)
                 (incf speed 1f0))
               (when (coll-with 'flame-powerup)
+                (format t "Chap ~a got a flame2-powerup" ,id)
                 (incf splode-size 1))
               (when (coll-with 'bomb-powerup)
+                (format t "Chap ~a got a bomb-powerup" ,id)
                 (incf simultaneous-bomb-count 1))
               (when (coll-with 'flame)
                 (format t "Chap ~a died" ,id)
@@ -142,7 +163,7 @@
                   :spawn-point spawn-point)))
        (progn
          (die)
-         (error "No respawn point for ~a" of)))))
+         (warn "No respawn point for ~a" of)))))
 
 ;;------------------------------------------------------------
 

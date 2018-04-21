@@ -1,5 +1,7 @@
 (in-package :bomber-chap)
 
+;;------------------------------------------------------------
+
 (defvar *levels* (make-hash-table))
 (defvar *current-level* nil)
 
@@ -29,36 +31,8 @@
            (incf wip)))
     (values max lines)))
 
-(define-level :yay
-    "
-#####################
-##0*** *** *** *** ##
-## *** *** *** *** ##
-## *** *** *** *** ##
-## ***     *** *** ##
-## *** *** *** *** ##
-## *** *** *** *** ##
-## *** ***     *** ##
-## *** *** *** ***1##
-#####################")
 
-(define-level :cross
-    "
-#####################
-##.*******0******  ##
-##.******* ******. ##
-##******** *****.**##
-##******** ****.***##
-##******** ********##
-##*****.** **.*****##
-##                 ##
-##*****.** **.*****##
-##******** ********##
-##***.**** ********##
-##**.***** ********##
-## .****** *******.##
-##1 ****** *******.##
-#####################")
+;;------------------------------------------------------------
 
 (defun get-level (name)
   (gethash name *levels*))
@@ -99,13 +73,13 @@
               (spawn 'floor-tile pos))
              ((char= #\. char)
               (spawn 'floor-tile pos)
-              (spawn (alexandria:random-elt '(flame-powerup
-                                              bomb-powerup
-                                              bomb-powerup
-                                              bomb-powerup
-                                              speed-powerup
-                                              speed-powerup
-                                              speed-powerup))
+              (spawn (print (alexandria:random-elt '(flame-powerup
+                                                bomb-powerup
+                                                bomb-powerup
+                                                bomb-powerup
+                                                speed-powerup
+                                                speed-powerup
+                                                speed-powerup)))
                      pos)
               (spawn 'block-tile pos))
              ((char= #\newline char)
@@ -131,3 +105,5 @@ case
   (kill-all-of 'flame-powerup)
   (kill-all-of 'bomb-powerup)
   (kill-all-of 'speed-powerup))
+
+;;------------------------------------------------------------

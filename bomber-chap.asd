@@ -8,4 +8,6 @@
   :serial t
   :depends-on (:daft)
   :components ((:file "package")
-               (:file "base")))
+               (:file "base")
+               (:file "define-level")
+               (:file "levels")))
