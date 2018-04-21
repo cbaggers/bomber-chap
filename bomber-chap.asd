@@ -10,4 +10,5 @@
   :components ((:file "package")
                (:file "base")
                (:file "define-level")
-               (:file "levels")))
+               (:file "levels")
+               (:file "main")))
