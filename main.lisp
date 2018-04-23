@@ -3,8 +3,9 @@
 ;;------------------------------------------------------------
 
 (defun run ()
-  (as *god*
-    (change-state :start))
+  (when *god*
+    (as *god*
+      (change-state :start)))
   (daft :start))
 
 (defun stop ()
