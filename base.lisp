@@ -94,8 +94,8 @@
                                 (simultaneous-bomb-count 1)
                                 (cool-down-hack 0)
                                 (splode-size 1)
-                                (speed 2f0)
-                                (spawn-point nil))
+                                (speed 3f0)
+                                (spawn-point nil t))
              (:main
               (let* ((ang (ang-for-chap ,id)))
                 (when ang
