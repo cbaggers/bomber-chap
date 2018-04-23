@@ -145,8 +145,9 @@
 
 (define-actor ghost ((:visual "images/bomberman/ghost.png")
                      (:default-depth 10)
-                     (of nil)
-                     (spawn-point nil))
+                     (:origin (0 -48))
+                     (of nil t)
+                     (spawn-point nil t))
   (:main
    (if spawn-point
        (let ((dist (distance-to spawn-point)))
