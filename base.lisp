@@ -17,7 +17,9 @@
   (:start
    (change-level :menu)
    (setf logo (spawn 'logo (v! 0 0)))
+   (add-timer :kick 0.49)
    (play-track "audio/city-stomper.ogg")
+   (sdl2-mixer:volume-music 50)
    (cffi:foreign-alloc :uint8 :count (* 1024 1024 30))
    (change-state :menu))
   (:menu
@@ -27,6 +29,8 @@
      (change-level :yay)
      (change-state :game)))
   (:game
+   (when (time-p :kick)
+     (start-shake 0.1 3))
    (if *shake*
        (funcall *shake*)
        (setf (focus-offset) (v! 0 0)))))
