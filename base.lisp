@@ -103,7 +103,8 @@
                   ;; blech, need proper collision info
                   ;; without some semblence of that it's hard to bodge sliding
                   (when (or (coll-with 'wall-tile)
-                            (coll-with 'block-tile))
+                            (coll-with 'block-tile)
+                            (coll-with (elt '(bomb-1 bomb-0) ,id)))
                     (compass-dir-move (v2:negate last-dir)))
                   ;;
                   ;; not sure this feels nice though
