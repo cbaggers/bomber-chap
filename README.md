@@ -7,3 +7,8 @@ This is a project to do ... something.
 
 Specify license here
 
+
+## Assets
+
+- https://gamedevelopment.tutsplus.com/articles/enjoy-these-totally-free-bomberman-inspired-sprites--gamedev-8541
+- https://dos88.itch.io/dos-88-music-library
