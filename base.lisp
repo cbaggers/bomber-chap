@@ -13,18 +13,16 @@
 (define-audio
   (:all :channels 32))
 
-(define-god ((logo nil))
+(define-god ((logo nil t))
   (:start
    (change-level :menu)
-   (print "start")
    (setf logo (spawn 'logo (v! 0 0)))
-   (print logo)
+   (play-track "audio/city-stomper.ogg")
+   (cffi:foreign-alloc :uint8 :count (* 1024 1024 30))
    (change-state :menu))
   (:menu
    (when (or (key-down-p key.space)
              (pad-button 0))
-     (print "menu")
-     (print logo)
      (kill logo)
      (change-level :yay)
      (change-state :game)))
