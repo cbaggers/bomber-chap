@@ -105,12 +105,14 @@
               (tile-spawn 'block-tile pos))
              ((char= char #\0)
               (spawn 'floor-tile pos)
-              (tile-spawn 'chap-0 (v2:- pos (v! 0 20))
-                          :spawn-point (tile-spawn 'spawn-point pos)))
+              (let ((pos (v2:- pos (v! 0 20))))
+                (tile-spawn 'chap-0 pos
+                            :spawn-point (tile-spawn 'spawn-point pos))))
              ((char= char #\1)
               (spawn 'floor-tile pos)
-              (tile-spawn 'chap-1 (v2:- pos (v! 0 20))
-                          :spawn-point (tile-spawn 'spawn-point pos)))
+              (let ((pos (v2:- pos (v! 0 20))))
+                (tile-spawn 'chap-1 pos
+                            :spawn-point (tile-spawn 'spawn-point pos))))
              ((char= char #\space)
               (spawn 'floor-tile pos))
              ((char= char #\f)

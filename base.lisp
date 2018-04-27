@@ -200,9 +200,9 @@
          (move-towards spawn-point (* 0.1 dist))
          (when (< dist 4)
            (die)
-           (spawn of (v2:- (snap-position (v! 0 0) *tile-size*)
-                           (v! 0 20))
-                  :spawn-point spawn-point)))
+           (as spawn-point
+             (spawn of (v! 0 0)
+                    :spawn-point spawn-point))))
        (progn
          (die)
          (warn "No respawn point for ~a" of)))))
