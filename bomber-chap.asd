@@ -9,5 +9,5 @@
   :depends-on (:daft)
   :components ((:file "package")
                (:file "base")
-               (:file "define-level")
+               (:file "level")
                (:file "main")))
