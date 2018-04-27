@@ -110,7 +110,6 @@
 (macrolet
     ((define-chap-badness (id)
        (let ((name (intern (format nil "CHAP-~a" id)))
-             (wins-var (elt '(*player-0-wins* *player-1-wins*) id))
              (other-wins-var (elt '(*player-1-wins* *player-0-wins*) id)))
          `(define-actor ,name ((:visual "images/bomberman/bman.png")
                                (:tile-count (8 4))
@@ -133,7 +132,7 @@
                  ;; without some semblence of that it's hard to bodge sliding
                  (when (or (coll-with 'wall-tile)
                            (coll-with 'block-tile)
-                           (coll-with (elt '(bomb-1 bomb-0) ,id)))
+                           (coll-with ',(elt '(bomb-1 bomb-0) id)))
                    (compass-dir-move (v2:negate last-dir)))
                  ;;
                  ;; not sure this feels nice though
@@ -150,7 +149,7 @@
                    ;; Ok, need a snapped offset
                    (let ((place-pos (v! 0 20))
                          (snap-pos (snap-position (v! 0 0) *tile-size*)))
-                     (push (spawn (elt '(bomb-0 bomb-1) ,id)
+                     (push (spawn ',(elt '(bomb-0 bomb-1) id)
                                   place-pos
                                   :dest (v2:- snap-pos place-pos)
                                   :range splode-size)
@@ -166,7 +165,11 @@
                (incf ,other-wins-var)
                (die)
                (if (>= ,other-wins-var *round-win*)
-                   (spawn 'dying-chap (v! 0 0))
+                   (progn
+                     (spawn 'dying-chap (v! 0 0))
+                     (as *god*
+                       (spawn ',(elt '(chap-1-wins chap-0-wins) id)
+                              (v! 0 0))))
                    (spawn 'ghost (v! 0 0)
                           :of ',name
                           :spawn-point spawn-point))))))))
@@ -181,11 +184,30 @@
      (anim (then
              (before (seconds 2.5)
                (turn-right 20)
-               (compass-angle-move 180 15))
-             (once (next-level)))
+               (compass-angle-move 180 15)))
            t))
   (:spin
    (funcall anim)))
+
+(defun make-win-do ()
+  (then
+    (before (seconds 3)
+      nil)
+    (once
+     (next-level)
+     (die))))
+
+(define-actor chap-0-wins ((:visual "images/p0win.png")
+                           (:default-depth 3)
+                           (do (make-win-do)))
+  (:main
+   (funcall do)))
+
+(define-actor chap-1-wins ((:visual "images/p1win.png")
+                           (:default-depth 3)
+                           (do (make-win-do)))
+  (:main
+   (funcall do)))
 
 ;;------------------------------------------------------------
 
