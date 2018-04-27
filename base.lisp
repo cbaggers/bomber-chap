@@ -8,6 +8,15 @@
 (defparameter *level-origin* (v! 0 0))
 (defparameter *shake* nil)
 
+(defvar *round-win* 3)
+(defvar *player-0-wins* 0)
+(defvar *player-1-wins* 0)
+
+(defun reset-wins ()
+  (setf *player-0-wins* 0
+        *player-1-wins* 0)
+  t)
+
 ;;------------------------------------------------------------
 
 (define-audio
@@ -100,63 +109,83 @@
 ;; this is bad :D
 (macrolet
     ((define-chap-badness (id)
-        (let ((name (intern (format nil "CHAP-~a" id))))
-          `(define-actor ,name ((:visual "images/bomberman/bman.png")
-                                (:tile-count (8 4))
-                                (:collision-mask "images/bomberman/cmask.png")
-                                (:default-depth 20)
-                                (:origin (0 -48))
-                                (last-dir (v! 0 0))
-                                (bombs nil)
-                                (simultaneous-bomb-count 1)
-                                (cool-down-hack 0)
-                                (splode-size 1)
-                                (speed 3f0)
-                                (spawn-point nil t))
-             (:main
-              (let* ((ang (ang-for-chap ,id)))
-                (when ang
-                  ;;
-                  ;; blech, need proper collision info
-                  ;; without some semblence of that it's hard to bodge sliding
-                  (when (or (coll-with 'wall-tile)
-                            (coll-with 'block-tile)
-                            (coll-with (elt '(bomb-1 bomb-0) ,id)))
-                    (compass-dir-move (v2:negate last-dir)))
-                  ;;
-                  ;; not sure this feels nice though
-                  (setf last-dir (move-chap ang speed)))
-                (decf cool-down-hack)
-                (let ((touching-bomb-p (or (coll-with 'bomb-0)
-                                           (coll-with 'bomb-1))))
-                  (setf bombs (remove-if #'is-dead bombs))
-                  (when (and (drop-for-chap ,id)
-                             (< (length bombs) simultaneous-bomb-count)
-                             (not touching-bomb-p)
-                             (<= cool-down-hack 0))
-                    (setf cool-down-hack 3)
-                    ;; Ok, need a snapped offset
-                    (let ((place-pos (v! 0 20))
-                          (snap-pos (snap-position (v! 0 0) *tile-size*)))
-                      (push (spawn (elt '(bomb-0 bomb-1) ,id)
-                                   place-pos
-                                   :dest (v2:- snap-pos place-pos)
-                                   :range splode-size)
-                            bombs)))))
-              (when (coll-with 'speed-powerup)
-                (incf speed 1f0))
-              (when (coll-with 'flame-powerup)
-                (incf splode-size 1))
-              (when (coll-with 'bomb-powerup)
-                (incf simultaneous-bomb-count 1))
-              (when (coll-with 'flame)
-                (die)
-                (spawn 'ghost (v! 0 0)
-                       :of ',name
-                       :spawn-point spawn-point)))))))
+       (let ((name (intern (format nil "CHAP-~a" id)))
+             (wins-var (elt '(*player-0-wins* *player-1-wins*) id))
+             (other-wins-var (elt '(*player-1-wins* *player-0-wins*) id)))
+         `(define-actor ,name ((:visual "images/bomberman/bman.png")
+                               (:tile-count (8 4))
+                               (:collision-mask "images/bomberman/cmask.png")
+                               (:default-depth 20)
+                               (:origin (0 -48))
+                               (last-dir (v! 0 0))
+                               (bombs nil)
+                               (simultaneous-bomb-count 1)
+                               (cool-down-hack 0)
+                               (splode-size 1)
+                               (speed 3f0)
+                               (spawn-point nil t)
+                               (invincible-time (before (seconds 3) t)))
+            (:main
+             (let* ((ang (ang-for-chap ,id)))
+               (when ang
+                 ;;
+                 ;; blech, need proper collision info
+                 ;; without some semblence of that it's hard to bodge sliding
+                 (when (or (coll-with 'wall-tile)
+                           (coll-with 'block-tile)
+                           (coll-with (elt '(bomb-1 bomb-0) ,id)))
+                   (compass-dir-move (v2:negate last-dir)))
+                 ;;
+                 ;; not sure this feels nice though
+                 (setf last-dir (move-chap ang speed)))
+               (decf cool-down-hack)
+               (let ((touching-bomb-p (or (coll-with 'bomb-0)
+                                          (coll-with 'bomb-1))))
+                 (setf bombs (remove-if #'is-dead bombs))
+                 (when (and (drop-for-chap ,id)
+                            (< (length bombs) simultaneous-bomb-count)
+                            (not touching-bomb-p)
+                            (<= cool-down-hack 0))
+                   (setf cool-down-hack 3)
+                   ;; Ok, need a snapped offset
+                   (let ((place-pos (v! 0 20))
+                         (snap-pos (snap-position (v! 0 0) *tile-size*)))
+                     (push (spawn (elt '(bomb-0 bomb-1) ,id)
+                                  place-pos
+                                  :dest (v2:- snap-pos place-pos)
+                                  :range splode-size)
+                           bombs)))))
+             (when (coll-with 'speed-powerup)
+               (incf speed 1f0))
+             (when (coll-with 'flame-powerup)
+               (incf splode-size 1))
+             (when (coll-with 'bomb-powerup)
+               (incf simultaneous-bomb-count 1))
+             (when (and (coll-with 'flame)
+                        (not (funcall invincible-time)))
+               (incf ,other-wins-var)
+               (die)
+               (if (>= ,other-wins-var *round-win*)
+                   (spawn 'dying-chap (v! 0 0))
+                   (spawn 'ghost (v! 0 0)
+                          :of ',name
+                          :spawn-point spawn-point))))))))
 
   (define-chap-badness 0)
   (define-chap-badness 1))
+
+(define-actor dying-chap
+    ((:visual "images/bomberman/bman.png")
+     (:tile-count (8 4))
+     (:default-depth 20)
+     (anim (then
+             (before (seconds 2.5)
+               (turn-right 20)
+               (compass-angle-move 180 15))
+             (once (next-level)))
+           t))
+  (:spin
+   (funcall anim)))
 
 ;;------------------------------------------------------------
 

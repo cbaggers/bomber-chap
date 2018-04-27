@@ -64,6 +64,7 @@
 (defun change-level (name)
   ;; hack
   (as *god*
+    (reset-wins)
     (kill-level-tiles)
     (spawn-level name)
     (when (eq name :menu)
