@@ -1,11 +1,12 @@
-- resize events
-- press __ to start
+- press __ to start text
 - per frame movement
-- juice
+- 'safe time' after spawning
 - life counter
 - player X won!
-- 'safe time' after spawning
-- no collisions with wall tiles
+- performance
 - dont let flames through walls?
+- juice
+- ghost snap is ugly
 - sound priority
 - remove volume 'save mah ears' hacks
+- better collision reaction
