@@ -13,8 +13,10 @@
 (define-audio
   (:all :channels 32))
 
-(define-god ((logo nil t))
+(define-god ((logo nil t)
+             (level-button-down nil t))
   (:start
+   (load-all-levels)
    (change-level :menu)
    (setf logo (spawn 'logo (v! 0 0)))
    (add-timer :kick 0.49)
@@ -23,10 +25,15 @@
    (cffi:foreign-alloc :uint8 :count (* 1024 1024 30))
    (change-state :menu))
   (:menu
+   (if (key-down-p key.j)
+       (when (not level-button-down)
+         (next-level)
+         (setf level-button-down t))
+       (setf level-button-down nil))
    (when (or (key-down-p key.space)
              (pad-button 0))
      (kill logo)
-     (change-level :yay)
+     (next-level)
      (change-state :game)))
   (:game
    (when (time-p :kick)
@@ -243,14 +250,12 @@
 
 ;;------------------------------------------------------------
 
-(define-actor spawn-point ()
-  (:main))
+(define-actor spawn-point ())
 
 ;;------------------------------------------------------------
 
 (define-actor wall-tile ((:visual "images/blocks/wall.png")
-                         (:default-depth 70))
-  (:main))
+                         (:default-depth 70)))
 
 (define-actor block-tile ((:visual "images/blocks/block.png")
                           (:default-depth 60))
@@ -276,8 +281,7 @@
    (funcall anim)))
 
 (define-actor floor-tile ((:visual "images/blocks/floor.png")
-                          (:default-depth 80))
-  (:main))
+                          (:default-depth 80)))
 
 (defun kill-all-of (kind-name)
   ;; hack: only for dev

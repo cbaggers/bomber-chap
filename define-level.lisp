@@ -2,7 +2,8 @@
 
 ;;------------------------------------------------------------
 
-(defvar *levels* (make-hash-table))
+(defvar *levels* (make-hash-table :test #'equal))
+(defvar *menu-level-str* nil)
 (defvar *current-level* nil)
 
 ;; hmm could be use daft's scenes for this?
@@ -10,6 +11,26 @@
 (defun register-level (name string)
   ;; {TODO} remove empty lines
   (setf (gethash name *levels*) string))
+
+(defun load-all-levels ()
+  (clrhash *levels*)
+  (let ((levels-dir (uiop:ensure-directory-pathname
+                     (shipshape:local-path "levels" :bomber-chap))))
+    (loop :for file :in (uiop:directory-files levels-dir) :do
+       (let ((str (alexandria:read-file-into-string file)))
+         (register-level (pathname-name file) str)))
+    (setf *menu-level-str*
+          (alexandria:read-file-into-string
+           (shipshape:local-path "menu.txt" :bomber-chap)))))
+
+(defun next-level ()
+  (load-all-levels)
+  (let* ((level-names (alexandria:hash-table-keys *levels*))
+         (level-names (sort level-names #'string<))
+         (next (mod (1+ (or (position *current-level* level-names) 0))
+                    (length level-names)))
+         (name (elt level-names next)))
+    (change-level name)))
 
 (defmacro define-level (name string)
   `(progn
@@ -30,7 +51,6 @@
              (setf wip 0))
            (incf wip)))
     (values max lines)))
-
 
 ;;------------------------------------------------------------
 
@@ -57,7 +77,9 @@
     (funcall *resize-body*)))
 
 (defun spawn-level (name)
-  (let ((level-string (get-level name))
+  (let ((level-string (if (eq name :menu)
+                          *menu-level-str*
+                          (get-level name)))
         (starting-pos (v! *level-origin*)))
     (multiple-value-bind (width height)
         (level-tile-dims level-string)
