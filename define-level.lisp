@@ -16,9 +16,13 @@
   (clrhash *levels*)
   (let ((levels-dir (uiop:ensure-directory-pathname
                      (shipshape:local-path "levels" :bomber-chap))))
-    (loop :for file :in (uiop:directory-files levels-dir) :do
-       (let ((str (alexandria:read-file-into-string file)))
-         (register-level (pathname-name file) str)))
+    (loop
+       :for file :in (uiop:directory-files levels-dir)
+       :for name := (pathname-name file)
+       :do
+       (unless (equal name "template")
+         (let ((str (alexandria:read-file-into-string file)))
+           (register-level name str))))
     (setf *menu-level-str*
           (alexandria:read-file-into-string
            (shipshape:local-path "menu.txt" :bomber-chap)))))
@@ -61,7 +65,9 @@
   ;; hack
   (as *god*
     (kill-level-tiles)
-    (spawn-level name)))
+    (spawn-level name)
+    (when (eq name :menu)
+      (change-state :load-menu))))
 
 (defun tile-spawn (kind pos &rest args)
   ;; We use this so it's easier to debug
@@ -146,6 +152,8 @@
 (defun kill-level-tiles ()
   ;; hack: only for dev
   (kill-all-of 'ghost)
+  (kill-all-of 'bomb-0)
+  (kill-all-of 'bomb-1)
   (kill-all-of 'chap-0)
   (kill-all-of 'chap-1)
   (kill-all-of 'block-tile)

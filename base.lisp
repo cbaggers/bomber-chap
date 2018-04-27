@@ -17,30 +17,36 @@
              (level-button-down nil t))
   (:start
    (load-all-levels)
-   (change-level :menu)
-   (setf logo (spawn 'logo (v! 0 0)))
    (add-timer :kick 0.49)
    (play-track "audio/city-stomper.ogg")
    (sdl2-mixer:volume-music 50)
-   (cffi:foreign-alloc :uint8 :count (* 1024 1024 30))
+   (change-state :load-menu))
+  (:load-menu
+   (change-level :menu)
+   (setf logo (spawn 'logo (v! 0 0)))
    (change-state :menu))
   (:menu
-   (if (key-down-p key.j)
-       (when (not level-button-down)
-         (next-level)
-         (setf level-button-down t))
-       (setf level-button-down nil))
-   (when (or (key-down-p key.space)
+   (when (or (key-down-p key.return)
              (pad-button 0))
      (kill logo)
+     (setf logo nil)
      (next-level)
      (change-state :game)))
   (:game
    (when (time-p :kick)
      (start-shake 0.1 3))
+   (setf level-button-down (check-next-level level-button-down))
    (if *shake*
        (funcall *shake*)
        (setf (focus-offset) (v! 0 0)))))
+
+(defun check-next-level (level-button-down)
+  (if (key-down-p key.j)
+      (when (not level-button-down)
+        (next-level)
+        (setf level-button-down t))
+      (setf level-button-down nil))
+  level-button-down)
 
 (defun start-shake (duration magnitude)
   (setf *shake*

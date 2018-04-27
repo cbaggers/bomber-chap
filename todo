@@ -1,7 +1,11 @@
-
-- move levels to text files
-- j to jump to next level
 - resize events
 - press __ to start
 - per frame movement
 - juice
+- life counter
+- player X won!
+- 'safe time' after spawning
+- no collisions with wall tiles
+- dont let flames through walls?
+- sound priority
+- remove volume 'save mah ears' hacks
