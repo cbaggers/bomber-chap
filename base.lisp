@@ -290,7 +290,8 @@
 ;;------------------------------------------------------------
 
 (define-actor wall-tile ((:visual "images/blocks/wall.png")
-                         (:default-depth 70)))
+                         (:default-depth 70))
+  (:main))
 
 (define-actor block-tile ((:visual "images/blocks/block.png")
                           (:default-depth 60))
