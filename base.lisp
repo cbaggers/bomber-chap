@@ -234,53 +234,67 @@
 (define-actor flame ((:visual "images/flame/flame.png")
                      (:tile-count (5 1))
                      (:default-depth 50)
-                     (time-to-die (after (seconds 0.7) t)))
+                     (ugh t)
+                     (dir nil)
+                     (count nil)
+                     (time-to-die (after (seconds 0.3) t)))
   (:main
    (advance-frame 0.3)
-   (when (funcall time-to-die)
-     (die))))
+   (if ugh
+       (progn
+         (coll-with 'wall-tile)
+         (setf ugh nil))
+       (if (or (coll-with 'wall-tile)
+               (funcall time-to-die))
+           (die)
+           (when (and dir count (> count 0))
+             (spawn 'flame dir
+                    :dir dir
+                    :count (- count 1))
+             (setf dir nil))))))
 
 ;;------------------------------------------------------------
 ;; As our collision mask give us so little info, and this is
 ;; only 2 player, we are bodging how we handle who owns what
 
-(progn
-  (defun bomb-common (dest range splode sound)
-    (let ((mv (v2:*s dest 0.1)))
-      ;; another place where the local-only thing feels off
-      (compass-dir-move mv)
-      (v2:decf dest mv))
-    (when (funcall splode)
-      (loop
-         :for i :below (1+ range)
-         :for o := (* i *tile-size*)
-         :do
-         (spawn 'flame (v! 0 o))
-         (spawn 'flame (v! 0 (- o)))
-         (spawn 'flame (v! o 0))
-         (spawn 'flame (v! (- o) 0)))
-      (start-shake 1 10)
-      (play-sound :all sound)
-      (die))
-    (advance-frame 0.1))
+(defun bomb-common (dest range splode sound)
+  (let ((mv (v2:*s dest 0.1)))
+    ;; another place where the local-only thing feels off
+    (compass-dir-move mv)
+    (v2:decf dest mv))
+  (when (funcall splode)
+    (spawn 'flame (v! 0 0))
+    (print range)
+    (let ((dir (v! *tile-size* 0)))
+      (spawn 'flame dir :dir dir :count (- range 1)))
+    (let ((dir (v! (- *tile-size*) 0)))
+      (spawn 'flame dir :dir dir :count (- range 1)))
+    (let ((dir (v! 0 *tile-size*)))
+      (spawn 'flame dir :dir dir :count (- range 1)))
+    (let ((dir (v! 0 (- *tile-size*))))
+      (spawn 'flame dir :dir dir :count (- range 1)))
+    (start-shake 1 10)
+    (play-sound :all sound)
+    (die))
+  (advance-frame 0.1))
 
-  (define-actor bomb-0 ((:visual "images/bomb/bomb.png")
-                        (:tile-count (3 1))
-                        (:default-depth 40)
-                        (dest (v! 0 0))
-                        (range 3)
-                        (splode (after (seconds 3) t))
-                        (sound (load-audio "audio/explosion-0.wav")))
-    (:main (bomb-common dest range splode sound)))
+(define-actor bomb-0 ((:visual "images/bomb/bomb.png")
+                      (:tile-count (3 1))
+                      (:default-depth 40)
+                      (dest (v! 0 0))
+                      (range 3)
+                      (splode (after (seconds 3) t))
+                      (sound (load-audio "audio/explosion-0.wav")))
+  (:main (bomb-common dest range splode sound)))
 
-  (define-actor bomb-1 ((:visual "images/bomb/bomb.png")
-                        (:tile-count (3 1))
-                        (:default-depth 40)
-                        (dest (v! 0 0))
-                        (range 3)
-                        (splode (after (seconds 3) t))
-                        (sound (load-audio "audio/explosion-0.wav")))
-    (:main (bomb-common dest range splode sound))))
+(define-actor bomb-1 ((:visual "images/bomb/bomb.png")
+                      (:tile-count (3 1))
+                      (:default-depth 40)
+                      (dest (v! 0 0))
+                      (range 3)
+                      (splode (after (seconds 3) t))
+                      (sound (load-audio "audio/explosion-0.wav")))
+  (:main (bomb-common dest range splode sound)))
 
 ;;------------------------------------------------------------
 
@@ -312,8 +326,7 @@
 ;;------------------------------------------------------------
 
 (define-actor wall-tile ((:visual "images/blocks/wall.png")
-                         (:default-depth 70))
-  (:main))
+                         (:default-depth 70)))
 
 (define-actor block-tile ((:visual "images/blocks/block.png")
                           (:default-depth 60))
