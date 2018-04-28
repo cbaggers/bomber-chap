@@ -68,8 +68,18 @@
           (once (setf *shake* nil)))))
 
 (define-actor logo ((:visual "images/menu/title.png")
-                    (:default-depth 5))
-  (:main))
+                    (:default-depth 5)
+                    (start nil t)
+                    (end nil t)
+                    (do (before (seconds 2) %progress%)))
+  (:setup
+   (setf start (spawn 'waypoint (v! 0 1500)))
+   (setf end (spawn 'waypoint (v! 0 0)))
+   (change-state :main))
+  (:main
+   (let* ((val (funcall do)))
+     (when (and val start end)
+       (position-between start end (easing-f:out-bounce val))))))
 
 ;;------------------------------------------------------------
 ;; As our collision mask give us so little info, and this is
@@ -78,15 +88,16 @@
 (defun move-chap (ang speed)
   (let* ((dir-floor (floor (/ (+ ang 45) 90f0)))
          (clamped-ang (* dir-floor 90f0))
-         (dir-id (mod (+ 2 dir-floor) 4)))
+         (dir-id (mod (+ 2 dir-floor) 4))
+         (anim-step (per-second 24f0)))
     (compass-angle-move clamped-ang speed)
     (case dir-id
       ;; could just split id into list but then am
       ;; consing lists all the time
-      (0 (advance-frame 0.4 '(9 16)))
-      (1 (advance-frame 0.4 '(17 24)))
-      (2 (advance-frame 0.4 '(0 8)))
-      (3 (advance-frame 0.4 '(25 32))))
+      (0 (advance-frame anim-step '(9 16)))
+      (1 (advance-frame anim-step '(17 24)))
+      (2 (advance-frame anim-step '(0 8)))
+      (3 (advance-frame anim-step '(25 32))))
     (compass-angle-dir clamped-ang speed)))
 
 (defun ang-for-chap (id)
@@ -121,11 +132,12 @@
                                (simultaneous-bomb-count 1)
                                (cool-down-hack 0)
                                (splode-size 1)
-                               (speed 3f0)
+                               (speed 180f0)
                                (spawn-point nil t)
                                (invincible-time (before (seconds 3) t)))
             (:main
-             (let* ((ang (ang-for-chap ,id)))
+             (let* ((ang (ang-for-chap ,id))
+                    (speed (per-second speed)))
                (when ang
                  ;;
                  ;; blech, need proper collision info
@@ -155,7 +167,7 @@
                                   :range splode-size)
                            bombs)))))
              (when (coll-with 'speed-powerup)
-               (incf speed 1f0))
+               (incf speed 60f0))
              (when (coll-with 'flame-powerup)
                (incf splode-size 1))
              (when (coll-with 'bomb-powerup)
@@ -184,7 +196,7 @@
      (anim (then
              (before (seconds 2.5)
                (turn-right 20)
-               (compass-angle-move 180 15)))
+               (compass-angle-move 180 (per-second 900))))
            t))
   (:spin
    (funcall anim)))
@@ -239,7 +251,7 @@
                      (count nil)
                      (time-to-die (after (seconds 0.3) t)))
   (:main
-   (advance-frame 0.3)
+   (advance-frame (per-second 20))
    (if ugh
        (progn
          (coll-with 'wall-tile)
@@ -264,7 +276,6 @@
     (v2:decf dest mv))
   (when (funcall splode)
     (spawn 'flame (v! 0 0))
-    (print range)
     (let ((dir (v! *tile-size* 0)))
       (spawn 'flame dir :dir dir :count (- range 1)))
     (let ((dir (v! (- *tile-size*) 0)))
@@ -276,7 +287,7 @@
     (start-shake 1 10)
     (play-sound :all sound)
     (die))
-  (advance-frame 0.1))
+  (advance-frame (per-second 6)))
 
 (define-actor bomb-0 ((:visual "images/bomb/bomb.png")
                       (:tile-count (3 1))
@@ -322,6 +333,7 @@
 ;;------------------------------------------------------------
 
 (define-actor spawn-point ())
+(define-actor waypoint ())
 
 ;;------------------------------------------------------------
 
@@ -345,7 +357,7 @@
          (then
            (before (seconds 2.5)
              (turn-right angle)
-             (compass-angle-move 180 15))
+             (compass-angle-move 180 (per-second 900)))
            (once (die))))
    (change-state :run))
   (:run
