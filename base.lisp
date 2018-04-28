@@ -249,20 +249,37 @@
 (define-actor ghost ((:visual "images/bomberman/ghost.png")
                      (:default-depth 10)
                      (:origin (0 -48))
+                     (wp nil t)
                      (of nil t)
-                     (spawn-point nil t))
+                     (spawn-point nil t)
+                     (do-wake (then
+                                (before (seconds 0.5)
+                                  (setf (scale) %progress%))
+                                (once (change-state :main))))
+                     (do-move nil t))
+  (:start
+   (setf wp (spawn 'waypoint (v! 0 0)))
+   (change-state :wake))
+  (:wake
+   (funcall do-wake))
   (:main
    (if spawn-point
-       (let ((dist (distance-to spawn-point)))
-         (move-towards spawn-point (* 0.1 dist))
-         (when (< dist 4)
-           (die)
-           (as spawn-point
-             (spawn of (v! 0 0)
-                    :spawn-point spawn-point))))
+       (if do-move
+           (funcall do-move)
+           (setf do-move
+                 (then
+                   (before (seconds 1.0)
+                     (position-between wp spawn-point
+                                       (easing-f:in-out-circ %progress%)))
+                   (once (change-state :revive)))))
        (progn
          (die)
-         (warn "No respawn point for ~a" of)))))
+         (warn "No respawn point for ~a" of))))
+  (:revive
+   (as spawn-point
+     (spawn of (v! 0 0)
+            :spawn-point spawn-point))
+   (die)))
 
 ;;------------------------------------------------------------
 
