@@ -194,7 +194,7 @@
                (case (random 3)
                  (0 (incf speed 60f0))
                  (1 (incf splode-size 1))
-                 (2 (incf simultoilaneous-bomb-count 1))))
+                 (2 (incf simultaneous-bomb-count 1))))
              (when (and (coll-with 'flame)
                         (not (funcall invincible-time)))
                (incf ,other-wins-var)
@@ -334,22 +334,37 @@
 
 (define-actor bomb-powerup
     ((:visual "images/powerups/bomb-powerup.png")
+     (:tile-count (10 2))
      (:default-depth 65))
+  (:setup
+   (advance-frame (random 50f0))
+   (change-state :main))
   (:main
+   (advance-frame (per-second 20))
    (when (or (coll-with 'chap-0) (coll-with 'chap-1))
      (die))))
 
 (define-actor flame-powerup
     ((:visual "images/powerups/flame-powerup.png")
+     (:tile-count (10 2))
      (:default-depth 65))
+  (:setup
+   (advance-frame (random 50f0))
+   (change-state :main))
   (:main
+   (advance-frame (per-second 20))
    (when (or (coll-with 'chap-0) (coll-with 'chap-1))
      (die))))
 
 (define-actor speed-powerup
     ((:visual "images/powerups/speed-powerup.png")
+     (:tile-count (10 2))
      (:default-depth 65))
+  (:setup
+   (advance-frame (random 50f0))
+   (change-state :main))
   (:main
+   (advance-frame (per-second 20))
    (when (or (coll-with 'chap-0) (coll-with 'chap-1))
      (die))))
 
@@ -377,14 +392,20 @@
                          (:default-depth 70)))
 
 (define-actor block-tile ((:visual "images/blocks/block.png")
+                          (:tile-count (5 4))
                           (:default-depth 60))
+  (:setup ;; 10 is great
+   (advance-frame (* 8 (x (offset-to *god*))))
+   (change-state :main))
   (:main
+   (advance-frame (per-second 20))
    (when (coll-with 'flame)
      (spawn 'dying-block-tile (v! 0 0))
      (die))))
 
 (define-actor dying-block-tile
     ((:visual "images/blocks/block.png")
+     (:tile-count (5 4))
      (:default-depth 60)
      (angle (+ 1f0 (random 2f0)))
      (anim nil))
