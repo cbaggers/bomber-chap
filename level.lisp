@@ -154,6 +154,8 @@
 
 (defun kill-level-tiles ()
   ;; hack: only for dev
+  (kill-all-of 'logo)
+  (kill-all-of 'to-start)
   (kill-all-of 'ghost)
   (kill-all-of 'dying-chap)
   (kill-all-of 'bomb-0)

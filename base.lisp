@@ -23,6 +23,7 @@
   (:all :channels 32))
 
 (define-god ((logo nil t)
+             (to-start nil t)
              (level-button-down nil t))
   (:start
    (load-all-levels)
@@ -32,7 +33,8 @@
    (change-state :load-menu))
   (:load-menu
    (change-level :menu)
-   (setf logo (spawn 'logo (v! 0 0)))
+   (setf logo (spawn 'logo (v! 0 100)))
+   (setf to-start (spawn 'to-start (v! 0 -100)))
    (change-state :menu))
   (:menu
    (when (or (key-down-p key.return)
@@ -74,6 +76,22 @@
                     (do (before (seconds 2) %progress%)))
   (:setup
    (setf start (spawn 'waypoint (v! 0 1500)))
+   (setf end (spawn 'waypoint (v! 0 0)))
+   (change-state :main))
+  (:main
+   (let* ((val (funcall do)))
+     (when (and val start end)
+       (position-between start end (easing-f:out-bounce val))))))
+
+(define-actor to-start ((:visual "images/menu/toStart.png")
+                        (:default-depth 5)
+                        (start nil t)
+                        (end nil t)
+                        (do (then
+                              (before (seconds 2) 0f0)
+                              (before (seconds 1) %progress%))))
+  (:setup
+   (setf start (spawn 'waypoint (v! 0 -1500)))
    (setf end (spawn 'waypoint (v! 0 0)))
    (change-state :main))
   (:main
