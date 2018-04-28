@@ -190,6 +190,11 @@
                (incf splode-size 1))
              (when (coll-with 'bomb-powerup)
                (incf simultaneous-bomb-count 1))
+             (when (coll-with 'mystery-powerup)
+               (case (random 3)
+                 (0 (incf speed 60f0))
+                 (1 (incf splode-size 1))
+                 (2 (incf simultoilaneous-bomb-count 1))))
              (when (and (coll-with 'flame)
                         (not (funcall invincible-time)))
                (incf ,other-wins-var)
@@ -345,6 +350,19 @@
     ((:visual "images/powerups/speed-powerup.png")
      (:default-depth 65))
   (:main
+   (when (or (coll-with 'chap-0) (coll-with 'chap-1))
+     (die))))
+
+(define-actor mystery-powerup
+    ((:visual "images/powerups/mystery-powerup.png")
+     (:tile-count (3 1))
+     (:default-depth 65))
+  (:setup
+   (set-frame (random 3))
+   (change-state :main))
+  (:main
+   (when (time-p :kick)
+     (next-frame))
    (when (or (coll-with 'chap-0) (coll-with 'chap-1))
      (die))))
 

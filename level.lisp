@@ -115,6 +115,9 @@
                             :spawn-point (tile-spawn 'spawn-point pos))))
              ((char= char #\space)
               (spawn 'floor-tile pos))
+             ((char= char #\?)
+              (spawn 'floor-tile pos)
+              (spawn 'mystery-powerup pos))
              ((char= char #\f)
               (spawn 'floor-tile pos)
               (spawn 'flame-powerup pos))
@@ -167,6 +170,7 @@
   (kill-all-of 'floor-tile)
   (kill-all-of 'flame-powerup)
   (kill-all-of 'bomb-powerup)
-  (kill-all-of 'speed-powerup))
+  (kill-all-of 'speed-powerup)
+  (kill-all-of 'mystery-powerup))
 
 ;;------------------------------------------------------------
