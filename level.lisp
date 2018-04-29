@@ -149,7 +149,7 @@
                    (setf *screen-height-in-game-units*
                          (+ (* (/ (* (max width height) *tile-size*) (x res))
                                (y res))
-                            (* 5 *tile-size*))))))
+                            (* 16 *tile-size*))))))
           (resized)
           (setf *resize-body* #'resized))
         (add-window-resize-listener 'resized)
@@ -158,6 +158,8 @@
 (defun kill-level-tiles ()
   ;; hack: only for dev
   (kill-all-of 'logo)
+  (kill-all-of 'waypoint)
+  (kill-all-of 'spawn-point)
   (kill-all-of 'to-start)
   (kill-all-of 'ghost)
   (kill-all-of 'dying-chap)
