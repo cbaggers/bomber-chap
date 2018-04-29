@@ -2,7 +2,6 @@
 
 ;;------------------------------------------------------------
 
-(setf daft::*system-hack* :bomber-chap)
 (setf *screen-height-in-game-units* 1200f0)
 (defparameter *tile-size* 64f0)
 (defparameter *level-origin* (v! 0 0))
