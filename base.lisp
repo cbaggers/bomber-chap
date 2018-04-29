@@ -36,6 +36,8 @@
    (setf to-start (spawn 'to-start (v! 0 -100)))
    (change-state :menu))
   (:menu
+   (when (key-down-p key.escape)
+     (stop))
    (when (or (key-down-p key.return)
              (pad-button 0))
      (kill logo)
