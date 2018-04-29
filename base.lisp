@@ -45,6 +45,8 @@
   (:game
    (when (time-p :kick)
      (start-shake 0.1 3))
+   (when (key-down-p key.escape)
+     (stop))
    (setf level-button-down (check-next-level level-button-down))
    (if *shake*
        (funcall *shake*)
