@@ -3,12 +3,14 @@
 ;;------------------------------------------------------------
 
 (def-shipping-manifest :bomber-chap run
-  :compression nil
+  :compression #+windows nil #-windows -1
   :libs-to-include (cl-soil::soil
                     (sdl2-mixer::libsdl2-mixer :recur)
                     (sdl2::libsdl2 :recur))
+  "menu.txt"
   "images/"
-  "audio/")
+  "audio/"
+  "levels/")
 
 (setf daft::*system-hack* :bomber-chap)
 (set-local-path-function
