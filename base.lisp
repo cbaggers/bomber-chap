@@ -164,7 +164,10 @@
                  (when (or (coll-with 'wall-tile)
                            (coll-with 'block-tile)
                            (coll-with ',(elt '(bomb-1 bomb-0) id)))
-                   (compass-dir-move (v2:negate last-dir)))
+                   (let ((tile-pos (v2:- (snap-position (v! 0 0) *tile-size*)
+                                         (v! 0 20))))
+                     (compass-dir-move (v2-n:+ (v2:negate last-dir)
+                                               (v2-n:*s tile-pos 0.03)))))
                  ;;
                  ;; not sure this feels nice though
                  (setf last-dir (move-chap ang speed)))
