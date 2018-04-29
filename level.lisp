@@ -21,18 +21,19 @@
        :for name := (pathname-name file)
        :do
        (unless (equal name "template")
-         (let ((str (alexandria:read-file-into-string file)))
+         (let ((str (remove #\return (alexandria:read-file-into-string file))))
            (register-level name str))))
     (setf *menu-level-str*
-          (alexandria:read-file-into-string
-           (shipshape:local-path "menu.txt" :bomber-chap)))))
+          (remove #\return
+		  (alexandria:read-file-into-string
+		   (shipshape:local-path "menu.txt" :bomber-chap))))))
 
 (defun next-level ()
   (load-all-levels)
   (let* ((level-names (alexandria:hash-table-keys *levels*))
          (level-names (sort level-names #'string<))
-         (next (mod (1+ (or (position *current-level* level-names) 0))
-                    (length level-names)))
+         (next (mod (1+ (or (position *current-level* level-names :test #'string=) 0))
+		    (length level-names)))
          (name (elt level-names next)))
     (change-level name)))
 
