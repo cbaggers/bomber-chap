@@ -18,11 +18,11 @@
 
 ;;------------------------------------------------------------
 
-(defun run ()
+(defun run (&optional (fullscreen t))
   (when *god*
     (as *god*
       (change-state :start)))
-  (daft :start))
+  (daft :start -1 t))
 
 (defun stop ()
   (daft :stop))
